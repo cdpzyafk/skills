@@ -7,14 +7,23 @@ description: Use when the user mentions a Jira issue key (like TRAD-83, ABC-123,
 
 Workflow for pulling a Jira task, understanding the codebase, designing code changes, and generating a design document.
 
+## 全自动执行原则
+
+**本技能全程无需用户确认，自动完成所有步骤。**
+
+- 每个步骤完成后，**立即自动进入下一步**，不等待用户输入
+- 遇到路径选择（语言、文件、方案），**自动做出最合理的判断并直接执行**，无需询问
+- 遇到歧义时，选择影响最小、最保守的方案直接推进
+- 只在全部步骤完成后，才向用户汇报结果
+
 ## Overview
 
 Given a Jira issue key, you will run a fully automated pipeline:
 1. Fetch the full issue from Jira (summary, description, acceptance criteria, comments)
 2. Explore the codebase to locate relevant code
 3. Design concrete, targeted code changes
-4. Write a design document to `doc/<ISSUE-KEY>.md`
-5. Auto-review with `fintech-product-manager` — check for functional and code gaps, patch the doc
+4. Write a design document to `docs/<ISSUE-KEY>.md`
+5. Auto-review with `fintech-product-manager` — check for functional and code gaps, patch the docs
 6. Auto-implement with `golang-pro` (Go) or `python-pro` (Python) following the finalized design
 7. Auto-simplify with `code-simplifier` — clean up the changed code without altering behavior
 8. Auto-QA with `qa-expert` — verify correctness, coverage, and edge cases; fix any issues found
@@ -62,7 +71,7 @@ Be specific: name the files, functions, and the nature of each change. Don't wri
 
 ## Step 5: Write the design document
 
-Create `doc/<ISSUE-KEY>.md` in the project root. Use this structure:
+Create `docs/<ISSUE-KEY>.md` in the project root. Use this structure:
 
 ```markdown
 # <ISSUE-KEY>: <Summary>
@@ -130,7 +139,7 @@ Adapt the structure as needed — for a simple bug fix, drop sections that don't
 
 ## Step 6: Review the document with the fintech-product-manager lens
 
-After writing the doc, **immediately** invoke the `fintech-product-manager` skill and apply it to review `doc/<ISSUE-KEY>.md`. Do not wait for user confirmation — this review happens automatically.
+写完文档后，**立即自动**调用 `fintech-product-manager` skill 对 `docs/<ISSUE-KEY>.md` 进行审查。不等待用户确认，直接执行。
 
 The review has two angles:
 
@@ -151,9 +160,9 @@ From a code perspective, ask:
 - Are there **tests** (unit, integration) that need to change that weren't listed?
 - Are there **dependent services or downstream consumers** that may be affected but weren't mentioned?
 
-### Updating the doc
+### Updating the docs
 
-After the review, append a `## Review Notes` section to `doc/<ISSUE-KEY>.md` with the findings:
+After the review, append a `## Review Notes` section to `docs/<ISSUE-KEY>.md` with the findings:
 
 ```markdown
 ## Review Notes
@@ -170,85 +179,121 @@ After the review, append a `## Review Notes` section to `doc/<ISSUE-KEY>.md` wit
 <State "None" here if everything checks out.>
 ```
 
-If gaps were found, also update the relevant sections of the document (Requirements, Design) to incorporate the fixes — don't just list them in Review Notes and leave the rest of the doc stale.
+If gaps were found, also update the relevant sections of the document (Requirements, Design) to incorporate the fixes — don't just list them in Review Notes and leave the rest of the docs stale.
 
 ## Step 7: Implement the changes
 
-After the review is complete and the doc is finalized, **automatically** proceed to implementation — no user prompt needed.
+After the review is complete and the docs is finalized, **立即自动进入实现阶段，不等待用户确认**。
 
-### Detect the language
+### Detect the language（自动判断，无需询问）
 
-Scan the files listed in the "Relevant files" table of the design doc:
-- If the majority are `.go` files → invoke the `golang-pro` skill and follow its patterns throughout implementation
-- If the majority are `.py` files → invoke the `python-pro` skill and follow its patterns throughout implementation
-- If mixed or ambiguous → use the language of the primary entry point or the one with the most changes
+Scan the files listed in the "Relevant files" table of the design docs and **immediately decide**:
+- `.go` files 占多数 → 直接调用 `golang-pro` skill，全程按其规范实现
+- `.py` files 占多数 → 直接调用 `python-pro` skill，全程按其规范实现
+- Mixed / ambiguous → 以改动最多的文件的语言为准，直接选定，继续执行
 
 ### Implement following the design
 
-Work through every change listed in the "Changes required" section of `doc/<ISSUE-KEY>.md`. For each change:
+Work through every change listed in the "Changes required" section of `docs/<ISSUE-KEY>.md`. For each change:
 1. Read the current file content before editing
 2. Apply only what the design specifies — stay within scope
 3. Keep changes minimal and focused; do not refactor surrounding code
 
 Follow all conventions and rules from the invoked language skill (golang-pro or python-pro) — naming, error handling, concurrency patterns, type safety, etc.
 
-After all changes are applied, update `doc/<ISSUE-KEY>.md` — add an `## Implementation` section listing each file changed and a one-line summary of what was done.
+After all changes are applied, update `docs/<ISSUE-KEY>.md` — add an `## Implementation` section listing each file changed and a one-line summary of what was done.
 
 ## Step 8: Simplify with code-simplifier
 
-After implementation is complete, **automatically** invoke the `code-simplifier` skill on all files changed in Step 7.
+实现完成后，**立即自动**对 Step 7 中所有改动的文件调用 `code-simplifier` skill。不等待用户确认。
 
 The simplifier should:
 - Remove redundant logic, unnecessary abstractions, and dead code introduced by the changes
 - Ensure consistency with surrounding code style and conventions
 - Preserve all functionality — behavior must not change
 
-After simplification, update the `## Implementation` section in `doc/<ISSUE-KEY>.md` to note that the code was simplified.
+After simplification, update the `## Implementation` section in `docs/<ISSUE-KEY>.md` to note that the code was simplified.
 
 ## Step 9: QA check with qa-expert
 
-After implementation is complete, **automatically** invoke the `qa-expert` skill and perform a QA review of the changes.
+简化完成后，**立即自动**调用 `qa-expert` skill。不等待用户确认，直接执行 QA。QA 分两部分：
 
-The QA review should cover:
-- **Correctness** — does the implementation match the design doc and the original Jira requirements?
-- **Test coverage** — are there unit/integration tests for the new behavior? Are existing tests still passing?
-- **Edge cases** — are the edge cases identified in the design doc handled in code?
-- **Error paths** — are errors and boundary conditions handled properly?
-- **Regression risk** — any change that might silently break existing behavior?
+### Part A: Write test cases
 
-Append a `## QA Report` section to `doc/<ISSUE-KEY>.md`:
+For every changed file, write concrete test cases covering:
+- **Happy path** — the primary use case described in the Jira requirements
+- **Edge cases** — boundary conditions identified in the design docs
+- **Error paths** — invalid inputs, missing data, error returns
+- **Regression** — existing behavior that must not change
+
+Write the tests directly into the appropriate test files (e.g., `*_test.go` for Go, `test_*.py` for Python). Follow the same language conventions as the implementation (golang-pro or python-pro rules apply here too). Do not just describe tests — write real, runnable test code.
+
+### Part B: Run the tests and make them pass
+
+Run the full test suite:
+- **Go**: `go test ./...`
+- **Python**: `pytest` or the project's test runner
+
+If any tests fail:
+1. Diagnose the failure — is it a test bug or an implementation bug?
+2. Fix the root cause (implementation or test, whichever is wrong)
+3. Re-run until all tests pass
+4. Do not skip, comment out, or weaken assertions to force a pass
+
+Keep iterating until `go test ./...` (or equivalent) exits with code 0.
+
+### Part C: Update the docs
+
+Append a `## QA Report` section to `docs/<ISSUE-KEY>.md`. This section must include the full test cases — not just a summary table, but the actual test code — so the document is a self-contained record of what was tested and why.
 
 ```markdown
 ## QA Report
 
-### Tests recommended
+### Test cases
 
-| Test | Type | File |
-|------|------|------|
-| <description> | unit/integration | `path/to/test_file` |
+For each test file touched, list every test case written with its full source:
 
-### Issues found
+#### `path/to/file_test.go` (or `test_file.py`)
 
-- <issue 1 — file, line, description, severity>
-- <issue 2>
+**`TestFunctionName_happyPath`** — normal flow, <what it verifies>
+```go
+func TestFunctionName_happyPath(t *testing.T) {
+    // full test code here
+}
+```
 
-### Passed
+**`TestFunctionName_edgeCase`** — <edge case description>
+```go
+func TestFunctionName_edgeCase(t *testing.T) {
+    // full test code here
+}
+```
 
-- <what looks correct and well-covered>
+*(repeat for every test case written)*
+
+### Issues found and fixed
+
+- <issue — file:line, description, fix applied>
+
+### Test run result
+
+```
+<paste the final test runner output showing all tests pass>
+```
 
 ### Verdict
 
-PASS / NEEDS FIXES
+PASS
 ```
 
-If the verdict is **NEEDS FIXES**, fix the issues inline before declaring done.
+The verdict must be **PASS** before the task is considered done. Do not declare completion until the test run output confirms it.
 
 ## After everything is complete
 
 Tell the user:
-- Where the doc was written (`doc/<ISSUE-KEY>.md`)
+- Where the docs was written (`docs/<ISSUE-KEY>.md`)
 - A one-paragraph summary of the key design decisions
 - What the fintech-product-manager review found (gaps fixed, or "review passed")
 - What was implemented (files changed)
-- QA verdict — pass or what was fixed
+- QA verdict — PASS with test output confirming all tests green
 - Any open questions that remain
