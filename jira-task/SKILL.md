@@ -16,7 +16,8 @@ Given a Jira issue key, you will run a fully automated pipeline:
 4. Write a design document to `doc/<ISSUE-KEY>.md`
 5. Auto-review with `fintech-product-manager` — check for functional and code gaps, patch the doc
 6. Auto-implement with `golang-pro` (Go) or `python-pro` (Python) following the finalized design
-7. Auto-QA with `qa-expert` — verify correctness, coverage, and edge cases; fix any issues found
+7. Auto-simplify with `code-simplifier` — clean up the changed code without altering behavior
+8. Auto-QA with `qa-expert` — verify correctness, coverage, and edge cases; fix any issues found
 
 ## Step 1: Extract the issue key
 
@@ -193,7 +194,18 @@ Follow all conventions and rules from the invoked language skill (golang-pro or 
 
 After all changes are applied, update `doc/<ISSUE-KEY>.md` — add an `## Implementation` section listing each file changed and a one-line summary of what was done.
 
-## Step 8: QA check with qa-expert
+## Step 8: Simplify with code-simplifier
+
+After implementation is complete, **automatically** invoke the `code-simplifier` skill on all files changed in Step 7.
+
+The simplifier should:
+- Remove redundant logic, unnecessary abstractions, and dead code introduced by the changes
+- Ensure consistency with surrounding code style and conventions
+- Preserve all functionality — behavior must not change
+
+After simplification, update the `## Implementation` section in `doc/<ISSUE-KEY>.md` to note that the code was simplified.
+
+## Step 9: QA check with qa-expert
 
 After implementation is complete, **automatically** invoke the `qa-expert` skill and perform a QA review of the changes.
 
