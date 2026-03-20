@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls /Users/terry/.claude/skills/*.md)",
+      "Bash(git -C /Users/terry/.claude/skills log --oneline -5)"
+    ]
+  }
+}
