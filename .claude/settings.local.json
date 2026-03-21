@@ -2,7 +2,18 @@
   "permissions": {
     "allow": [
       "Bash(ls /Users/terry/.claude/skills/*.md)",
-      "Bash(git -C /Users/terry/.claude/skills log --oneline -5)"
+      "Bash(git -C /Users/terry/.claude/skills log --oneline -5)",
+      "Skill(update-config)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(gh api:*)",
+      "Bash(curl -s https://raw.githubusercontent.com/uber-go/guide/master/style.md)",
+      "Bash(ls -d /Users/terry/github/gocryptotrader/*/)",
+      "Bash(grep -r ^type.*interface /Users/terry/github/gocryptotrader/exchanges/*.go)",
+      "Bash(grep -n \"type.*Exchange.*interface\\\\|type IBotExchange\\\\|SendPayload\" /Users/terry/github/gocryptotrader/exchanges/*.go)",
+      "Bash(xargs ls:*)",
+      "Bash(find /Users/terry/github/gocryptotrader/exchanges/order -type f -name *.go)",
+      "Bash(ls -la /Users/terry/github/gocryptotrader/exchanges/*.go)",
+      "Bash(find /Users/terry/github/gocryptotrader/exchanges/kline -type f -name *.go)"
     ]
   }
 }
