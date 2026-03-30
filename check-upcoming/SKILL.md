@@ -17,9 +17,6 @@ impact report telling you exactly which files need changing and why.
 
 ## Overview
 
-### 输出语言
-报告**必须**使用中文或英文。交易所 changelog 中出现其他语言的内容（如韩文、日文等），翻译成英文后再输出。
-
 Three phases:
 1. **Fetch** — run `fetch_upcoming_changes.py` to pull OKX / Binance / Bybit / GateIO / KuCoin changelogs
 2. **Scan** — extract key identifiers from each changelog entry; grep the codebase for them
@@ -100,6 +97,7 @@ grep -rn "IDENTIFIER" \
   --include="*.go" --include="*.py" \
   --exclude-dir=".venv" \
   --exclude-dir="vendor" \
+  --exclude-dir=".claude" \
   --exclude="*.pb.go" \
   --exclude="fetch_upcoming_changes.py" \
   .
@@ -115,12 +113,29 @@ For each grep hit, note:
 
 ## Phase 3 — Impact Report
 
+### 语言规则（严格执行）
+
+报告**只能使用中文或英文**。Changelog 中出现的其他语言（韩文、日文等）翻译成英文后再输出。
+
+表格单元格中常用词的正确写法：
+
+| 含义 | 正确（中文） | 正确（英文） | ❌ 错误示例 |
+|------|------------|------------|-----------|
+| 无/没有 | 无 | None | ~~없음~~ |
+| 合计 | 合计 | Total | ~~합계~~ |
+| 无影响 | 无影响 | No impact | ~~영향 없음~~ |
+| 无需操作 | 无需操作 | No action | ~~조치 불필요~~ |
+
+选定一种语言后，整份报告保持一致；不要同一份报告内中英混排表格。
+
+---
+
 Read `references/report-template.md` for the complete template before writing the report.
 The four required sections are:
 
 1. **⚠️ Breaking Changes** — table per entry: File | Line | Current usage | Required change + Deadline + Impact level
 2. **📢 Additive Changes** — relevant files found + recommendation
-3. **✅ No Action Required** — table of scanned-but-no-hit entries with identifiers searched
+3. **✅ No Action Required** — table of scanned-but-no-hit entries with identifiers searched; include a "结论/Conclusion" column explaining *why* there is no impact (e.g., "endpoint not used", "field commented out")
 4. **📋 Summary** — one row per exchange: Breaking | Additive | Files affected | Action required
 
 ---
