@@ -2,12 +2,7 @@
 name: check-upcoming
 description: >
   Use whenever the user wants to audit exchange API changelog updates against the current codebase.
-  Triggers on: "check upcoming changes", "check changelog", "API有没有更新", "交易所有没有改接口",
-  "看下最新的API变更", "check if exchange changes affect our code", "有没有breaking change",
-  "OKX/Binance/Bybit/GateIO/KuCoin有没有更新", "run check-upcoming", or any request to compare
-  exchange API changes with the project. ALWAYS invoke when the user asks whether exchange
-  API updates require code modifications, even if phrased as a question like "do we need to
-  update anything?" or "need to change code for the new API?".
+  Triggers on: "检查上游接口", "检查币安接口更新".
 ---
 
 # check-upcoming

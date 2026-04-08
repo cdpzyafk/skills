@@ -13,7 +13,8 @@
       "Bash(xargs ls:*)",
       "Bash(find /Users/terry/github/gocryptotrader/exchanges/order -type f -name *.go)",
       "Bash(ls -la /Users/terry/github/gocryptotrader/exchanges/*.go)",
-      "Bash(find /Users/terry/github/gocryptotrader/exchanges/kline -type f -name *.go)"
+      "Bash(find /Users/terry/github/gocryptotrader/exchanges/kline -type f -name *.go)",
+      "Bash(curl:*)"
     ]
   }
 }

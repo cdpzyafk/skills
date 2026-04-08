@@ -1,6 +1,6 @@
 ---
 name: code-review-expert
-description: "Expert code review of current git changes with a senior engineer lens. Detects SOLID violations, security risks, and proposes actionable improvements."
+description: "Expert code review of current git changes with a senior engineer lens. Detects SOLID violations, security risks, and proposes actionable improvements. ALWAYS invoke when user says 'review my code', 'code review', 'check my changes', 'review this PR', 'review the diff', 'help me review', or before merging branches."
 ---
 
 # Code Review Expert
@@ -8,6 +8,20 @@ description: "Expert code review of current git changes with a senior engineer l
 ## Overview
 
 Perform a structured review of the current git changes with focus on SOLID, architecture, removal candidates, and security risks. Default to review-only output unless the user asks to implement changes.
+
+## Review Philosophy
+
+Before running any checklist, internalize these principles:
+
+**Understand before judging.** State what you think this change is trying to accomplish before raising issues. If the intent is ambiguous, ask — a review built on wrong assumptions wastes everyone's time. Surface your understanding at the top of the review so the author can correct it before reading your findings.
+
+**Review what was written, not what you'd write.** There's a sharp line between "this is incorrect" and "this isn't how I'd do it." P0–P2 findings should be about correctness, safety, or clear maintainability impact — not personal style. Flag preferences as P3, briefly. When in doubt about whether something is a real issue or a preference, say so explicitly.
+
+**Surgical suggestions.** When you propose a fix, propose the minimum change needed. Don't rewrite a 50-line function because one line has a bug. The proposed fix should trace directly to the issue — same discipline a good code author applies.
+
+**No speculative findings.** Only flag actual problems in the current diff, not hypothetical future risks (unless they're security issues, correctness bugs, or the pattern demonstrably causes production incidents). "This could cause problems if X" is worth raising only if X is realistic in this codebase.
+
+**Pre-existing issues are not blockers.** If you notice debt outside the diff, note it briefly in "Additional Suggestions" — don't raise it as P0–P2. Your job is to assess what changed, not audit the entire file.
 
 ## Severity Levels
 
@@ -23,6 +37,7 @@ Perform a structured review of the current git changes with focus on SOLID, arch
 ### 1) Preflight context
 
 - Use `git status -sb`, `git diff --stat`, and `git diff` to scope changes.
+- **State your understanding**: Before proceeding to checklists, write 1–2 sentences on what this change is trying to accomplish. If it's genuinely unclear, ask the user instead of guessing.
 - If needed, use `rg` or `grep` to find related modules, usages, and contracts.
 - Identify entry points, ownership boundaries, and critical paths (auth, payments, data writes, network).
 
@@ -71,7 +86,11 @@ Perform a structured review of the current git changes with focus on SOLID, arch
   - **Boundary conditions**: null/undefined handling, empty collections, numeric boundaries, off-by-one
 - Flag issues that may cause silent failures or production incidents.
 
-### 6) Output format
+### 6) Quick sanity checklist
+
+Load `references/quick-check.md` and run through all 12 items. Items that fail become findings if not already captured above.
+
+### 7) Output format
 
 Structure your review as follows:
 
@@ -79,6 +98,7 @@ Structure your review as follows:
 ## Code Review Summary
 
 **Files reviewed**: X files, Y lines changed
+**Change intent**: [1–2 sentences on what this change is trying to accomplish]
 **Overall assessment**: [APPROVE / REQUEST_CHANGES / COMMENT]
 
 ---
@@ -90,8 +110,9 @@ Structure your review as follows:
 
 ### P1 - High
 1. **[file:line]** Brief title
-  - Description of issue
-  - Suggested fix
+  - Description of issue (why it's wrong, not just what it is)
+  - Suggested fix (minimal — touch only the problematic code)
+  - Verify: [one-line check to confirm the fix is correct, e.g., "unit test X should pass"]
 
 ### P2 - Medium
 2. (continue numbering across sections)
@@ -121,7 +142,7 @@ Description of the issue and suggested fix.
 - Any areas not covered (e.g., "Did not verify database migrations")
 - Residual risks or recommended follow-up tests
 
-### 7) Next steps confirmation
+### 8) Next steps confirmation
 
 After presenting findings, ask user how to proceed:
 
@@ -154,3 +175,4 @@ Please choose an option or provide specific instructions.
 | `security-checklist.md` | Web/app security and runtime risk checklist |
 | `code-quality-checklist.md` | Error handling, performance, boundary conditions |
 | `removal-plan.md` | Template for deletion candidates and follow-up plan |
+| `quick-check.md` | 12-item sanity checklist (step 6) |

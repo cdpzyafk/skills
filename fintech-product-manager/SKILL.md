@@ -34,6 +34,7 @@ description: Use when researching financial price data sources, conducting finan
 | **PRD/产品设计** | "写PRD"、"产品设计"、"期权理财"、"双币理财"、接入新标的 | `references/product-development.md` |
 | **机制设计评审** | "review"、"评审"、"帮我看一下"、用户提交了设计文档/规范/spec | `references/mechanism-review.md` |
 | **套利机制分析** | "套利机制"、"基差套利"、"arb"、"阈值"、"资金费率因果"、涉及永续合约套利的任何问题或文档评审 | `references/arbitrage-kb.md` |
+| **期权 Vol Mark** | "vol mark"、"波动率标记"、"JWSS7"、"隐含波动率"、"vol surface"、"期权定价参数"、"bfitter"、"jwfitter"、"atmfvol"、"vol smile" | `references/options-volmark-kb.md` |
 
 **自动获取外部数据时** → 执行 `scripts/fetch_price_source.sh`（curl → Playwright 自动降级）
 

@@ -18,7 +18,7 @@ Every abstraction must justify its existence.
 **在写任何代码之前，必须回答这三个问题：**
 
 1. **我实际在解决什么约束？**（延迟？吞吐？正确性？解耦？可维护性？）
-2. **满足该约束的最简单代码是什么？**
+2. **满足该约束的最简单代码是什么？**（有多种合理方案？列出权衡，不要默默选一个。）
 3. **我是在解决真实问题，还是在迁就某个模式/规则？**
 
 无法清晰回答第 1 个问题？停下——你还没理解问题本身。
@@ -52,6 +52,12 @@ These apply to every line of Go code.
 - **Every goroutine needs an exit strategy** — context, WaitGroup, or done channel
 - **Never fire-and-forget**: `go func() { for { work() } }()` leaks forever
 - **Prefer synchronous functions**: let callers add concurrency when they need it
+
+### Surgical Edits (when modifying existing code)
+- Match the local pattern, even if yours would be better — consistency beats local optimization
+- Don't reformat lines you didn't touch; don't "improve" adjacent code that isn't broken
+- Every changed line should trace directly to the request — if you can't explain why it changed, revert it
+- If you notice unrelated issues, mention them — don't silently fix them
 
 ### Code Quality
 - **gofmt always** — no exceptions
@@ -177,7 +183,7 @@ func (op *OrderProcessor) ExecuteOrder(ctx context.Context, amount decimal.Decim
 
 ## Development Workflow
 
-0. **First principles check** (never skip): Answer three questions before writing anything: ① What constraint am I solving? ② What's the simplest code that satisfies it? ③ Am I solving a real problem? Can't answer ①? Stop.
+0. **First principles check** (never skip): Answer three questions before writing anything: ① What constraint am I solving? ② What's the simplest code that satisfies it? (Multiple valid options? Surface the trade-offs — don't pick silently.) ③ Am I solving a real problem? + State what "done" looks like: _"Done when [specific verifiable condition, e.g., TestFoo passes, p99 < 10ms, this function returns ErrX on Y input]."_ Can't answer ①? Stop.
 1. **Scan context**: Review `go.mod`, existing patterns, naming conventions in the current file
 2. **Design first**: Define interface contracts before concrete types — only if callers actually need the flexibility
 3. **For non-trivial changes**: Save a brief design note in `docs/YYYYMMDD-<brief-description>.md`. Include: what is changing, why, key interfaces/types, trade-offs. Skip for small, routine changes.
@@ -258,3 +264,62 @@ Before marking work done:
 - [ ] `context.Context` is first param on all I/O-bound functions
 - [ ] Every division is guarded where divisor might be zero
 - [ ] First principles check done — complexity is justified by a real constraint
+
+---
+
+## Challenger Workflow（挑战者工作流）
+
+对于**复杂功能实现**（新 feature、算法逻辑、并发结构、金融计算），产出代码后必须经过挑战者审查才能标记完成。
+
+**跳过条件**（以下情况不需要启动挑战者）：
+- 纯阅读/解释任务，不产生新代码
+- 单行命名修正、格式调整、注释更新
+- 用户明确说"不需要审查"
+
+### 执行步骤
+
+**Step 1 — 产生初始代码**（正常完成实现）
+
+**Step 2 — 启动挑战者子代理**
+
+使用 Agent 工具启动独立子代理，传入以下内容：
+
+```
+请按照 [agents/go-challenger.md 的完整路径] 中的指令，对以下内容进行挑战者审查：
+
+**任务需求：**
+[原始任务描述]
+
+**待审查代码：**
+[完整的代码输出]
+```
+
+**Step 3 — 处理裁决**
+
+- 裁决"全部通过"→ 直接进入 Step 4
+- 裁决"否"→ 逐条修复报告中列出的所有问题，然后重新执行 Step 2，直到裁决为"全部通过"
+
+**Step 4 — 展示完整过程**
+
+向用户展示：
+1. 最终代码
+2. 挑战者审查报告（包括所有迭代轮次，如果有修复）
+3. 如有修复：每轮修复了什么问题
+
+格式示例：
+```
+## 实现结果
+
+[最终代码]
+
+---
+
+## 挑战者审查（第 1 轮）
+[挑战者报告]
+
+## 修复说明
+[针对每个 ❌ 的修复内容]
+
+## 挑战者审查（第 2 轮）
+[挑战者报告 — 全部 ✅]
+```
